@@ -29,10 +29,16 @@ builder.Services.AddAuthentication()
 
 
 
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+app.UseCors(policy => 
+    policy.WithOrigins("https://localhost:44485") // replace with your React app's address
+          .AllowAnyMethod()
+          .AllowAnyHeader());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
