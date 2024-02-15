@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { BsCheckLg } from 'react-icons/bs';
+import axios from 'axios';
+
 function App() {
   const [allTodos, setAllTodos] = useState([]);
   const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -9,7 +11,7 @@ function App() {
   const [completedTodos, setCompletedTodos] = useState([]);
   const [isCompletedScreen, setIsCompletedScreen] = useState(false);
 
-  const handleAddNewToDo = () => {
+  const handleAddNewToDo = async () => {
     let newToDoObj = {
       title: newTodoTitle,
       description: newDescription,
@@ -19,47 +21,79 @@ function App() {
     updatedTodoArr.push(newToDoObj);
     // console.log (updatedTodoArr);
     setAllTodos(updatedTodoArr);
-    localStorage.setItem('todolist', JSON.stringify(updatedTodoArr));
+    // localStorage.setItem('todolist', JSON.stringify(updatedTodoArr));
     setNewDescription('');
     setNewTodoTitle('');
+    try {
+      await axios.post(`http://localhost:5253/api/Task`, newToDoObj);
+    }
+    catch (error) {
+      console.error(error);
+    }
   };
 
-  useEffect(() => {
-    let savedTodos = JSON.parse(localStorage.getItem('todolist'));
-    let savedCompletedToDos = JSON.parse(
-      localStorage.getItem('completedTodos')
-    );
-    if (savedTodos) {
-      setAllTodos(savedTodos);
-    }
+  // useEffect(() => {
+  //   let savedTodos = JSON.parse(localStorage.getItem('todolist'));
+  //   let savedCompletedToDos = JSON.parse(
+  //     localStorage.getItem('completedTodos')
+  //   );
+  //   if (savedTodos) {
+  //     setAllTodos(savedTodos);
+  //   }
 
-    if (savedCompletedToDos) {
-      setCompletedTodos(savedCompletedToDos);
-    }
+  //   if (savedCompletedToDos) {
+  //     setCompletedTodos(savedCompletedToDos);
+  //   }
+  // }, []);
+
+  useEffect(() => {
+    // Aquí es donde hacemos la llamada a la API para obtener los ToDos
+    const fetchTodos = async () => {
+      try {
+        const response = await axios.get('http://localhost:5253/api/Task');
+        setAllTodos(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchTodos();
   }, []);
 
-  const handleToDoDelete = index => {
+
+  const handleToDoDelete = async index => {
     let reducedTodos = [...allTodos];
     reducedTodos.splice(index, 1);
     // console.log (index);
 
     // console.log (reducedTodos);
-    localStorage.setItem('todolist', JSON.stringify(reducedTodos));
+    // localStorage.setItem('todolist', JSON.stringify(reducedTodos));
     setAllTodos(reducedTodos);
+    try {
+      await axios.delete(`http://localhost:5253/api/Task/${index}`);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleCompletedTodoDelete = index => {
+  const handleCompletedTodoDelete = async index => {
     let reducedCompletedTodos = [...completedTodos];
     reducedCompletedTodos.splice(index);
     // console.log (reducedCompletedTodos);
-    localStorage.setItem(
-      'completedTodos',
-      JSON.stringify(reducedCompletedTodos)
-    );
+    // localStorage.setItem(
+    //   'completedTodos',
+    //   JSON.stringify(reducedCompletedTodos)
+    // );
     setCompletedTodos(reducedCompletedTodos);
+
+    try {
+      await axios.delete(`http://localhost:5253/api/Task/${index}`);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleComplete = index => {
+  const handleComplete = async index => {
     const date = new Date();
     var dd = date.getDate();
     var mm = date.getMonth() + 1;
@@ -80,11 +114,16 @@ function App() {
     let updatedCompletedList = [...completedTodos, filteredTodo];
     console.log(updatedCompletedList);
     setCompletedTodos(updatedCompletedList);
-    localStorage.setItem(
-      'completedTodos',
-      JSON.stringify(updatedCompletedList)
-    );
+    // localStorage.setItem(
+    //   'completedTodos',
+    //   JSON.stringify(updatedCompletedList)
+    // );
     // console.log (index);
+    try {
+      await axios.put(`http://localhost:5253/api/Task/${index}`, filteredTodo);
+    } catch (error) {
+      console.error(error);
+    }
 
     handleToDoDelete(index);
   };
